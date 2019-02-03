@@ -24,12 +24,17 @@ public class Part1{
     
     public static boolean processInput(String[] args) throws Exception{
     	
-    	if(args.length < 5) {
+    	if(args.length < 6) {
     		System.out.println("Please give the number of passangers!");
     		return false;
     	}
-    	else if(args.length < 4) {
+    	else if(args.length < 5) {
     		System.out.println("Please give the location as a 4 number pair!");
+    		return false;
+    	}
+    	else if (args.length < 4) {
+    		
+    		System.out.println("Please specify dave of request(dave/cheapest)");
     		return false;
     	}
     	else if(args.length > 6) {
@@ -37,13 +42,15 @@ public class Part1{
     		return false;
     	}
     	
+    	String requestType = args[0];
+    	
     	// get locations from user input
     	try {
     		
-    		Double l1 = Double.parseDouble(args[0]);
-    		Double l2 = Double.parseDouble(args[1]);
-    		Double l3 = Double.parseDouble(args[2]);
-    		Double l4 = Double.parseDouble(args[3]);
+    		Double l1 = Double.parseDouble(args[1]);
+    		Double l2 = Double.parseDouble(args[2]);
+    		Double l3 = Double.parseDouble(args[3]);
+    		Double l4 = Double.parseDouble(args[4]);
     		
     	}
     	catch(Exception e) {
@@ -52,7 +59,7 @@ public class Part1{
     		return false;
     	}
     	
-    	Location newLocation = new Location(args[0], args[1], args[2], args[3]);
+    	Location newLocation = new Location(args[1], args[2], args[3], args[4]);
     	
     	
         // get number of seats
@@ -60,7 +67,7 @@ public class Part1{
         
         try {
         	
-        	numberOfSeats = Integer.parseInt(args[4]);
+        	numberOfSeats = Integer.parseInt(args[5]);
         }
         catch(Exception e) {
         	
@@ -68,11 +75,21 @@ public class Part1{
         	return false;
         }
         
-        // get a sorted array of cheapest cars available
-        ArrayList<RideOption> response = decideSupplier(newLocation);
+        ArrayList<RideOption> response = null;
         
+        if(requestType.equals("dave")) {
+        	
+        	//get only daves' response cars
+        	response = getDaveRides(newLocation);
+        	System.out.println("Daves' rides are: ");
+        }
+        else {
+        	
+        	//get a sorted array of cheapest cars available
+	        response = decideSupplier(newLocation);
+	        System.out.println("Cheapest rides found are: ");
+        }
         // print every car available with the corresponding price
-        System.out.println("Cheapest rides found are: ");
         for(RideOption option : response)
         	if(option.car_Type.seats > numberOfSeats)
 	            System.out.println(option.car_Type + " - " + 
@@ -82,31 +99,28 @@ public class Part1{
         return true;
     	
     }
+    
+    public static ArrayList<RideOption> getDaveRides(Location location) throws Exception{
+    	
+    	RideResponse daveResponse = getRideResponse(location, "dave");
+    	
+    	ArrayList<RideOption> daveRides = new ArrayList<RideOption>();
+    	
+    	if(daveResponse != null)
+    		daveRides.addAll(daveResponse.rides);
+    	
+    	Collections.sort(daveRides);
+    	
+    	return daveRides;    	
+    }
     public static ArrayList<RideOption> decideSupplier(Location location) throws Exception{
     	
     	// get each supplier 
-    	URL daveURL = new URL("https://techtest.rideways.com/dave?pickup=" 
-                + location.getPickupLatitude() + "," 
-                + location.getPickupLongitude() + "&dropoff=" 
-                + location.getDropoffLatitude() + "," 
-                + location.getDropoffLongitude());
-    	
-    	URL ericURL = new URL("https://techtest.rideways.com/eric?pickup=" 
-                + location.getPickupLatitude() + "," 
-                + location.getPickupLongitude() + "&dropoff=" 
-                + location.getDropoffLatitude() + "," 
-                + location.getDropoffLongitude());
-    	
-    	URL jeffURL = new URL("https://techtest.rideways.com/jeff?pickup=" 
-                + location.getPickupLatitude() + "," 
-                + location.getPickupLongitude() + "&dropoff=" 
-                + location.getDropoffLatitude() + "," 
-                + location.getDropoffLongitude());
     	
     	// request options for each
-    	RideResponse daveResponse = getRideResponse(daveURL);
-        RideResponse ericResponse = getRideResponse(ericURL);
-        RideResponse jeffResponse = getRideResponse(jeffURL);
+    	RideResponse daveResponse = getRideResponse(location, "dave");
+        RideResponse ericResponse = getRideResponse(location, "eric");
+        RideResponse jeffResponse = getRideResponse(location, "jeff");
         
         // save all the options in one pool
         ArrayList<RideOption> pool = new ArrayList<RideOption>();
@@ -152,8 +166,14 @@ public class Part1{
 		
 	}
 
-	public static RideResponse getRideResponse(URL url) throws Exception{
+	public static RideResponse getRideResponse(Location location, String supplier) throws Exception{
     	
+		URL url = new URL("https://techtest.rideways.com/" + supplier + "?pickup=" 
+                + location.getPickupLatitude() + "," 
+                + location.getPickupLongitude() + "&dropoff=" 
+                + location.getDropoffLatitude() + "," 
+                + location.getDropoffLongitude());
+		
     	HttpURLConnection conn = null;
     	RideResponse response = null;
     	
