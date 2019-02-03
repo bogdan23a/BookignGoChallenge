@@ -24,21 +24,21 @@ public class Part1{
     
     public static boolean processInput(String[] args) throws Exception{
     	
-    	if(args.length < 6) {
-    		System.out.println("Please give the number of passangers!");
+    	if(args.length > 7) {
+    		System.out.println("Too many arguments given!");
     		return false;
     	}
-    	else if(args.length < 5) {
-    		System.out.println("Please give the location as a 4 number pair!");
+    	else if(args.length < 1) {
+    		System.out.println("Please specify type of request(dave/cheapest)");
     		return false;
     	}
     	else if (args.length < 4) {
     		
-    		System.out.println("Please specify dave of request(dave/cheapest)");
+    		System.out.println("Please give the location as a 4 number pair!");
     		return false;
     	}
-    	else if(args.length > 6) {
-    		System.out.println("Too many arguments given!");
+    	else if(args.length < 6) {
+    		System.out.println("Please give the number of passangers!");
     		return false;
     	}
     	
@@ -116,7 +116,7 @@ public class Part1{
     public static ArrayList<RideOption> decideSupplier(Location location) throws Exception{
     	
     	// get each supplier 
-    	
+ 
     	// request options for each
     	RideResponse daveResponse = getRideResponse(location, "dave");
         RideResponse ericResponse = getRideResponse(location, "eric");
